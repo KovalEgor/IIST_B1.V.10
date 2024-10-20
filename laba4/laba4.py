@@ -23,8 +23,8 @@ class HopfieldNetwork:
         return pattern
 
     # Метод восстановления поврежденного изображения
-    def recover(self, damaged_pattern, steps=10):
-        return self.update(damaged_pattern, steps)
+    def recover(self, damaged_pattern, steps=100):
+        return self.update(damaged_pattern.copy(), steps)
 
 # Функция для преобразования изображения в вектор
 def image_to_vector(image):
@@ -38,9 +38,11 @@ def vector_to_image(vector, shape):
 def display_image(image, title):
     plt.imshow(image, cmap="gray")
     plt.title(title)
+    plt.axis('off')
     plt.show()
 
 def create_training_data():
+    # Создание обучающих данных (цифры от 0 до 9)
     zero = np.array([[0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
                      [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
                      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -158,11 +160,6 @@ def create_training_data():
         image_to_vector(nine)
     ]
 
-# Преобразование изображений в векторы длиной 100
-def image_to_vector(image):
-    return np.where(image > 0, 1, -1).flatten()
-
-
 # Функция для порчи изображения (замена части пикселей на случайные значения)
 def damage_image(image, damage_ratio=0.3):
     damaged_image = image.copy()
@@ -176,9 +173,16 @@ if __name__ == "__main__":
     hopfield = HopfieldNetwork(size=100)
     training_patterns = create_training_data()
     hopfield.train(training_patterns)
-    original_image = training_patterns[0]
+
+    # Выбор поврежденного изображения для восстановления
+    original_image = training_patterns[3]  # Например, цифра "3"
     damaged_image = damage_image(original_image, damage_ratio=0.3)
+
     display_image(vector_to_image(original_image, (10, 10)), "Оригинальная цифра")
     display_image(vector_to_image(damaged_image, (10, 10)), "Поврежденная цифра")
+
+    # Восстановление поврежденного изображения
     recovered_image = hopfield.recover(damaged_image, steps=10)
+
+    # Отображение восстановленного изображения
     display_image(vector_to_image(recovered_image, (10, 10)), "Восстановленная цифра")
